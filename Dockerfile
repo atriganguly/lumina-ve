@@ -2,8 +2,7 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install system dependencies for OpenCV and psutil headers
-# Updated to use 'libgl1' instead of the deprecated 'libgl1-mesa-glx'
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
@@ -14,11 +13,12 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download the rembg u2net model to cache so the first request doesn't stall
-RUN python -c "import urllib.request; import os; os.makedirs('/root/.u2net', exist_ok=True); urllib.request.urlretrieve('https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx', '/root/.u2net/u2net.onnx')"
+# Set U2NET_HOME explicitly so rembg always knows where to find the model, regardless of user
+ENV U2NET_HOME=/app/.u2net
+RUN python -c "import urllib.request; import os; os.makedirs('/app/.u2net', exist_ok=True); urllib.request.urlretrieve('https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx', '/app/.u2net/u2net.onnx')"
 
 COPY . .
 
-EXPOSE 8000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use the shell form of CMD so the $PORT environment variable injected by Render is correctly evaluated
+# If $PORT is empty (like during local testing), it gracefully falls back to 8000
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}

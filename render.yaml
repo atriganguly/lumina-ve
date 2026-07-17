@@ -4,5 +4,4 @@ services:
     env: docker
     region: oregon
     plan: starter
-    dockerCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
