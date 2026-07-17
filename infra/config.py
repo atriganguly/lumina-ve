@@ -1,8 +1,8 @@
 import os
 
 class Config:
-    PROJECT_NAME = "Lumina-VE God-Tier Validator"
-    VERSION = "2.0.0"
+    PROJECT_NAME = "Lumina-VE"
+    VERSION = "1.0.0"
     
     # ML & CV Settings
     MIN_RAM_REQUIRED_MB = int(os.getenv("MIN_RAM_REQUIRED_MB", 400))
