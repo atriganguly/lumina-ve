@@ -1,8 +1,7 @@
-.env
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
+.env
 venv/
-.venv/
 env/
+.u2net/
+*.onnx

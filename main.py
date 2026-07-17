@@ -1,25 +1,18 @@
-import uvicorn
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from api.vision_router import router as vision_router
-from api.schemas import HealthResponse
-from infra.config import config
 
-app = FastAPI(title="Lumina VE", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app = FastAPI(
+    title="Lumina-VE God-Tier Validator",
+    description="Marketplace Image Validation & Performance Intelligence Tool",
+    version="2.0.0"
 )
 
-app.include_router(vision_router, prefix="/api/v1")
+app.include_router(vision_router)
 
-@app.get("/health", response_model=HealthResponse)
-def health_check():
-    return HealthResponse(status="ONLINE", engine="Lumina-V8")
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "version": "2.0.0"}
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=config.port, log_level="info", workers=1)
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

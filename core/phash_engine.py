@@ -1,20 +1,12 @@
-import cv2
-import numpy as np
+import io
+from PIL import Image
+import imagehash
 
-def compute_phash(image_bytes: bytes) -> str:
-    nparr = np.frombuffer(image_bytes, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
-    
-    if img is None:
-        raise ValueError("Invalid image payload structure")
-
-    resized = cv2.resize(img, (32, 32), interpolation=cv2.INTER_AREA)
-    dct = cv2.dct(np.float32(resized))
-    dctlowfreq = dct[:8, :8]
-    
-    med = np.median(dctlowfreq)
-    diff = dctlowfreq > med
-    
-    hash_str = "".join("1" if bit else "0" for bit in diff.flatten())
-    
-    return hex(int(hash_str, 2))[2:].zfill(16)
+def generate_phash(image_bytes: bytes) -> str:
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as img:
+            # Generate a 64-bit perceptual hash
+            phash = imagehash.phash(img)
+            return str(phash)
+    except Exception:
+        return "ERROR_GENERATING_HASH"

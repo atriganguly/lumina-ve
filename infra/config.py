@@ -1,11 +1,13 @@
-from pydantic_settings import BaseSettings
+import os
 
-class SystemConfig(BaseSettings):
-    lumina_api_key: str = "default_unsafe_key"
-    port: int = 8080
+class Config:
+    PROJECT_NAME = "Lumina-VE God-Tier Validator"
+    VERSION = "2.0.0"
+    
+    # ML & CV Settings
+    MIN_RAM_REQUIRED_MB = int(os.getenv("MIN_RAM_REQUIRED_MB", 400))
+    
+    # Network Settings
+    FETCH_TIMEOUT_SECONDS = int(os.getenv("FETCH_TIMEOUT_SECONDS", 15))
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
-
-config = SystemConfig()
+settings = Config()

@@ -1,36 +1,40 @@
 import cv2
 import numpy as np
+from typing import List, Dict, Any
 
-def extract_dominant_color(image_bytes: bytes) -> dict:
-    nparr = np.frombuffer(image_bytes, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+def extract_color_matrix(image_bytes: bytes, num_colors: int = 3) -> List[Dict[str, Any]]:
+    np_arr = np.frombuffer(image_bytes, np.uint8)
+    img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
     
     if img is None:
-        raise ValueError("Invalid image payload structure")
+        return []
 
-    # Parity Calculation: Extract standard deviation for VDB complexity profiling
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, stddev = cv2.meanStdDev(gray)
-    sigma = stddev[0][0]
-
-    if sigma <= 15.0:
-        analysis_label = "Solid"
-    elif sigma <= 45.0:
-        analysis_label = "Gradient"
-    else:
-        analysis_label = "Cluttered"
-
-    # Color Extraction: K-Means Clustering
-    pixels = np.float32(img.reshape(-1, 3))
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.1)
+    # Resize drastically for performance (colors remain relatively intact)
+    img = cv2.resize(img, (100, 100), interpolation=cv2.INTER_AREA)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     
-    _, labels, palette = cv2.kmeans(pixels, 1, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-    _, counts = np.unique(labels, return_counts=True)
-    
-    dominant = palette[np.argmax(counts)]
-    hex_str = f"#{int(dominant[2]):02x}{int(dominant[1]):02x}{int(dominant[0]):02x}"
+    # Flatten image into a list of pixels
+    pixels = img.reshape((-1, 3))
+    pixels = np.float32(pixels)
 
-    return {
-        "hex_color": hex_str,
-        "analysis": analysis_label
-    }
+    # K-Means clustering
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+    _, labels, centers = cv2.kmeans(pixels, num_colors, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    
+    centers = np.uint8(centers)
+    counts = np.bincount(labels.flatten())
+    total_pixels = len(pixels)
+    
+    dominant_colors = []
+    for i in range(num_colors):
+        color = centers[i]
+        hex_code = f"#{color[0]:02X}{color[1]:02X}{color[2]:02X}"
+        percentage = round((counts[i] / total_pixels) * 100, 2)
+        dominant_colors.append({
+            "hex_code": hex_code,
+            "percentage": percentage
+        })
+        
+    # Sort from most dominant to least
+    dominant_colors.sort(key=lambda x: x["percentage"], reverse=True)
+    return dominant_colors
