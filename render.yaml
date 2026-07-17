@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: lumina-ve
+    env: docker
+    region: ohio
+    plan: free
+    envVars:
+      - key: LUMINA_API_KEY
+        generateValue: true
+      - key: PORT
+        value: 8080
