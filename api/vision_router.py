@@ -15,8 +15,9 @@ async def analyze_background(file: UploadFile = File(...)):
     
     try:
         loop = asyncio.get_running_loop()
-        hex_color = await loop.run_in_executor(pool, extract_dominant_color, image_bytes)
-        return ColorResponse(hex_color=hex_color)
+        # Dispatches the dictionary response directly from the process worker thread
+        result = await loop.run_in_executor(pool, extract_dominant_color, image_bytes)
+        return ColorResponse(hex_color=result["hex_color"], analysis=result["analysis"])
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 

@@ -6,6 +6,7 @@ class HealthResponse(BaseModel):
 
 class ColorResponse(BaseModel):
     hex_color: str
+    analysis: str
 
 class PHashResponse(BaseModel):
     phash: str
