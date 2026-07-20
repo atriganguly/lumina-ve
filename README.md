@@ -1,7 +1,9 @@
 <div align="center">
-  <!-- Eye Icon (Light & Dark Theme Aware) -->
-  <img src="https://api.iconify.design/lucide:eye.svg?color=%23111827#gh-light-mode-only" width="48" height="48" alt="Lumina VE Icon"/>
-  <img src="https://api.iconify.design/lucide:eye.svg?color=%23ffffff#gh-dark-mode-only" width="48" height="48" alt="Lumina VE Icon"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.iconify.design/lucide:eye.svg?color=%23ffffff">
+    <source media="(prefers-color-scheme: light)" srcset="https://api.iconify.design/lucide:eye.svg?color=%23111827">
+    <img src="https://api.iconify.design/lucide:eye.svg?color=%23111827" width="48" height="48" alt="Lumina VE Icon"/>
+  </picture>
 
   <h1>Lumina VE</h1>
   <p>Marketplace Image Validation & Performance Intelligence Engine built for high-throughput scale.</p>
