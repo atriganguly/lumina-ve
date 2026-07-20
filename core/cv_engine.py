@@ -2,8 +2,36 @@ import cv2
 import numpy as np
 import psutil
 from typing import Dict, Any, Tuple, Optional
-from rembg import remove
 from infra.config import settings
+
+def get_available_memory_mb() -> float:
+    """Reads memory limits, accurately supporting containerized cgroups environments."""
+    try:
+        # Check cgroups v2 (Modern Docker/Render)
+        with open("/sys/fs/cgroup/memory.max", "r") as f:
+            mem_max_str = f.read().strip()
+        if mem_max_str != "max":
+            mem_max = int(mem_max_str)
+            with open("/sys/fs/cgroup/memory.current", "r") as f:
+                mem_current = int(f.read().strip())
+            return (mem_max - mem_current) / (1024 * 1024)
+    except Exception:
+        pass
+    
+    try:
+        # Check cgroups v1 (Older Docker)
+        with open("/sys/fs/cgroup/memory/memory.limit_in_bytes", "r") as f:
+            mem_max = int(f.read().strip())
+        if mem_max < 9223372036854771712: # Avoid 'no limit' default max value
+            with open("/sys/fs/cgroup/memory/memory.usage_in_bytes", "r") as f:
+                mem_current = int(f.read().strip())
+            return (mem_max - mem_current) / (1024 * 1024)
+    except Exception:
+        pass
+
+    # Fallback to standard Host OS Memory
+    vm = psutil.virtual_memory()
+    return vm.available / (1024 * 1024)
 
 def analyze_compliance(image_bytes: bytes) -> Tuple[Dict[str, Any], Optional[str]]:
     # 1. Decode image for OpenCV
@@ -15,11 +43,11 @@ def analyze_compliance(image_bytes: bytes) -> Tuple[Dict[str, Any], Optional[str
 
     total_pixels = img.shape[0] * img.shape[1]
 
-    # 2. Blur Detection (Laplacian Variance)
+    # 2. Blur Detection (Laplacian Variance - Lightweight, runs regardless of config)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     variance = cv2.Laplacian(gray, cv2.CV_64F).var()
-    is_blurry = variance < 100.0  
-
+    is_blurry = variance < 100.0
+    
     compliance_data = {
         "is_blurry": bool(is_blurry),
         "blur_variance_score": round(variance, 2),
@@ -29,16 +57,19 @@ def analyze_compliance(image_bytes: bytes) -> Tuple[Dict[str, Any], Optional[str
         "bounding_box_padding_pct": None
     }
 
-    # 3. Memory Check before Heavy ML Operations (Using dynamic config)
-    vm = psutil.virtual_memory()
-    available_mb = vm.available / (1024 * 1024)
-    
+    # 3. Environment Toggle Check
+    if not settings.ENABLE_HEAVY_ML:
+        return compliance_data, "BACKGROUND_COMPLIANCE_SKIPPED: Feature disabled via ENABLE_HEAVY_ML environment configuration."
+
+    # 4. Memory Check before Heavy ML Operations
+    available_mb = get_available_memory_mb()
     if available_mb < settings.MIN_RAM_REQUIRED_MB:
-        warning_msg = f"Background separation disabled: Container memory dropped below optimal size (Available: {available_mb:.0f}MB, Required: {settings.MIN_RAM_REQUIRED_MB}MB)."
+        warning_msg = f"BACKGROUND_COMPLIANCE_SKIPPED: Insufficient container memory (Available: {available_mb:.0f}MB, Required: {settings.MIN_RAM_REQUIRED_MB}MB)."
         return compliance_data, warning_msg
 
-    # 4. Background Removal using rembg
+    # 5. Background Removal using rembg (Lazy Loaded)
     try:
+        from rembg import remove
         output_bgra = remove(image_bytes)
         output_np = np.frombuffer(output_bgra, np.uint8)
         rgba_img = cv2.imdecode(output_np, cv2.IMREAD_UNCHANGED)
@@ -66,8 +97,8 @@ def analyze_compliance(image_bytes: bytes) -> Tuple[Dict[str, Any], Optional[str
         x, y, w, h = cv2.boundingRect(alpha_channel)
         canvas_w, canvas_h = img.shape[1], img.shape[0]
         
-        padding_x = ((canvas_w - w) / canvas_w) * 100
-        padding_y = ((canvas_h - h) / canvas_h) * 100
+        padding_x = ((canvas_w - w) / canvas_w) * 100 if canvas_w > 0 else 0
+        padding_y = ((canvas_h - h) / canvas_h) * 100 if canvas_h > 0 else 0
         avg_padding = (padding_x + padding_y) / 2
 
         is_amazon_compliant = (white_bg_pct > 95.0) and (not is_blurry) and (10.0 <= avg_padding <= 25.0)
@@ -82,5 +113,5 @@ def analyze_compliance(image_bytes: bytes) -> Tuple[Dict[str, Any], Optional[str
         return compliance_data, None
 
     except Exception as e:
-        warning_msg = f"Background separation failed due to unexpected error: {str(e)}"
+        warning_msg = f"BACKGROUND_COMPLIANCE_FAILED: Background separation failed due to unexpected error: {str(e)}"
         return compliance_data, warning_msg

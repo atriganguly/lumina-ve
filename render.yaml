@@ -5,3 +5,14 @@ services:
     region: oregon
     plan: starter
     healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: ENABLE_HEAVY_ML
+        value: "true"
+      - key: FETCH_TIMEOUT_SECONDS
+        value: 15
+      - key: MAX_FILE_SIZE_BYTES
+        value: 26214400
+      - key: LUMINA_API_KEY
+        sync: false

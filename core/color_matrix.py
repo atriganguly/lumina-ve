@@ -1,13 +1,17 @@
 import cv2
 import numpy as np
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple, Optional
+from infra.config import settings
 
-def extract_color_matrix(image_bytes: bytes, num_colors: int = 3) -> List[Dict[str, Any]]:
+def extract_color_matrix(image_bytes: bytes, num_colors: int = 3) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+    if not settings.ENABLE_HEAVY_ML:
+        return [], "COLOR_MATRIX_SKIPPED: Feature disabled via ENABLE_HEAVY_ML environment configuration."
+
     np_arr = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
     
     if img is None:
-        return []
+        return [], "COLOR_MATRIX_FAILED: Could not decode image."
 
     # Resize drastically for performance (colors remain relatively intact)
     img = cv2.resize(img, (100, 100), interpolation=cv2.INTER_AREA)
@@ -37,4 +41,5 @@ def extract_color_matrix(image_bytes: bytes, num_colors: int = 3) -> List[Dict[s
         
     # Sort from most dominant to least
     dominant_colors.sort(key=lambda x: x["percentage"], reverse=True)
-    return dominant_colors
+    
+    return dominant_colors, None
