@@ -4,9 +4,6 @@ from typing import List, Dict, Any, Tuple, Optional
 from infra.config import settings
 
 def extract_color_matrix(image_bytes: bytes, num_colors: int = 3) -> Tuple[List[Dict[str, Any]], Optional[str]]:
-    if not settings.ENABLE_HEAVY_ML:
-        return [], "COLOR_MATRIX_SKIPPED: Feature disabled via ENABLE_HEAVY_ML environment configuration."
-
     np_arr = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
     
@@ -19,15 +16,41 @@ def extract_color_matrix(image_bytes: bytes, num_colors: int = 3) -> Tuple[List[
     
     # Flatten image into a list of pixels
     pixels = img.reshape((-1, 3))
-    pixels = np.float32(pixels)
+    total_pixels = len(pixels)
 
-    # K-Means clustering
+    if not settings.ENABLE_HEAVY_ML:
+        # Lightweight Non-ML Fallback: Quantization & Frequency Counting
+        warning_msg = "COLOR_MATRIX_DOWNGRADED: Using lightweight quantization because ENABLE_HEAVY_ML is disabled."
+        
+        # Quantize colors to bin them (rounding to nearest multiple of 32 to group similar shades)
+        quantized_pixels = (pixels // 32) * 32
+        
+        # Get unique colors and their frequency counts
+        unique_colors, counts = np.unique(quantized_pixels, axis=0, return_counts=True)
+        
+        # Sort indices by count in descending order
+        sorted_indices = np.argsort(-counts)
+        top_indices = sorted_indices[:num_colors]
+        
+        dominant_colors = []
+        for idx in top_indices:
+            color = unique_colors[idx]
+            hex_code = f"#{color[0]:02X}{color[1]:02X}{color[2]:02X}"
+            percentage = round((counts[idx] / total_pixels) * 100, 2)
+            dominant_colors.append({
+                "hex_code": hex_code,
+                "percentage": percentage
+            })
+            
+        return dominant_colors, warning_msg
+
+    # Heavy ML Process: K-Means clustering
+    pixels = np.float32(pixels)
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
     _, labels, centers = cv2.kmeans(pixels, num_colors, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
     
     centers = np.uint8(centers)
     counts = np.bincount(labels.flatten())
-    total_pixels = len(pixels)
     
     dominant_colors = []
     for i in range(num_colors):

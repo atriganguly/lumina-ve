@@ -18,19 +18,24 @@ async def fetch_and_analyze_network(safe_url_data: dict) -> Tuple[bytes, Dict[st
                 geo_location = f"{geo_data.get('cityName', 'Unknown')}, {geo_data.get('countryCode', 'Unknown')}"
     except Exception:
         pass # Silently fail GeoIP to prioritize the core application payload
-    
-    # 2. Image Download with DNS Rebinding prevention (use IP directly, pass Host header)
+        
+    # 2. Image Download with DNS Rebinding prevention (use IP directly, pass Host header & SNI)
     start_time = time.perf_counter()
     image_bytes = bytearray()
     
     # Reconstruct URL using IP for transport, preserving scheme and path
     query_str = f"?{safe_url_data['query']}" if safe_url_data['query'] else ""
     transport_url = f"{safe_url_data['scheme']}://{ip_address}{safe_url_data['path']}{query_str}"
+    
+    # Force both the HTTP Host header and the TLS SNI (Server Name Indication) extension 
+    # to match the original domain. This prevents '421 Misdirected Request' and SSL 
+    # mismatch errors on CDNs and shared hosting, while keeping our SSRF defense intact.
     headers = {"Host": hostname}
+    extensions = {"sni_hostname": hostname}
     
     async with httpx.AsyncClient(timeout=settings.FETCH_TIMEOUT_SECONDS, verify=False) as client:
         try:
-            async with client.stream("GET", transport_url, headers=headers) as response:
+            async with client.stream("GET", transport_url, headers=headers, extensions=extensions) as response:
                 response.raise_for_status()
                 ttfb = (time.perf_counter() - start_time) * 1000
                 
@@ -42,9 +47,13 @@ async def fetch_and_analyze_network(safe_url_data: dict) -> Tuple[bytes, Dict[st
                             status_code=413, 
                             detail=f"File exceeds maximum allowed size of {settings.MAX_FILE_SIZE_BYTES // (1024 * 1024)}MB."
                         )
-        except httpx.HTTPError as e:
+        except httpx.HTTPStatusError as e:
+            # Capture HTTP status errors (like 403 or 404) to provide clearer debugging
+            raise HTTPException(status_code=400, detail=f"Network request failed: {e.response.status_code} {e.response.reason_phrase}")
+        except httpx.RequestError as e:
+            # Capture standard connection errors
             raise HTTPException(status_code=400, detail=f"Network request failed: {str(e)}")
-    
+            
     total_time = (time.perf_counter() - start_time) * 1000
     
     network_data = {
