@@ -1,22 +1,16 @@
 <div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="[https://api.iconify.design/lucide:eye.svg?color=white](https://api.iconify.design/lucide:eye.svg?color=white)">
-    <source media="(prefers-color-scheme: light)" srcset="[https://api.iconify.design/lucide:eye.svg?color=111827](https://api.iconify.design/lucide:eye.svg?color=111827)">
-    <img src="[https://api.iconify.design/lucide:eye.svg?color=111827](https://api.iconify.design/lucide:eye.svg?color=111827)" width="40" height="40" alt="Lumina VE Icon"/>
-  </picture>
+  <!-- Eye Icon (Light & Dark Theme Aware) -->
+  <img src="https://api.iconify.design/lucide:eye.svg?color=%23111827#gh-light-mode-only" width="48" height="48" alt="Lumina VE Icon"/>
+  <img src="https://api.iconify.design/lucide:eye.svg?color=%23ffffff#gh-dark-mode-only" width="48" height="48" alt="Lumina VE Icon"/>
+
   <h1>Lumina VE</h1>
   <p>Marketplace Image Validation & Performance Intelligence Engine built for high-throughput scale.</p>
   
   <p>
     Created by 
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="[https://api.iconify.design/fa6-brands/github.svg?color=white](https://api.iconify.design/fa6-brands/github.svg?color=white)">
-      <source media="(prefers-color-scheme: light)" srcset="[https://api.iconify.design/fa6-brands/github.svg?color=111827](https://api.iconify.design/fa6-brands/github.svg?color=111827)">
-      <img src="[https://api.iconify.design/fa6-brands/github.svg?color=111827](https://api.iconify.design/fa6-brands/github.svg?color=111827)" width="16" height="16" style="vertical-align: middle; margin-bottom: 2px;" alt="GitHub"/>
-    </picture>
-    <a href="[https://github.com/atriganguly](https://github.com/atriganguly)"><b>@atriganguly</b></a> &nbsp;&bull;&nbsp; 
-    <a href="[https://github.com/atriganguly/lumina-ve](https://github.com/atriganguly/lumina-ve)"><b>View Repository</b></a> &nbsp;&bull;&nbsp; 
-    <a href="[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)"><b>Interactive API Docs</b></a>
+    <a href="https://github.com/atriganguly"><b>@atriganguly</b></a> &nbsp;&bull;&nbsp; 
+    <a href="https://github.com/atriganguly/lumina-ve"><b>View Repository</b></a> &nbsp;&bull;&nbsp; 
+    <a href="http://127.0.0.1:8000/docs"><b>Interactive API Docs</b></a>
   </p>
 </div>
 
