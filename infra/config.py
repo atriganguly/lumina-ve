@@ -22,11 +22,10 @@ class Config:
     ENABLE_HEAVY_ML = os.getenv("ENABLE_HEAVY_ML", "True").lower() in ("true", "1", "yes")
     
     # API Authentication
-    LUMINA_API_KEY = os.getenv("LUMINA_API_KEY") 
-    if not LUMINA_API_KEY and ENVIRONMENT != "dev":
-        raise ValueError("LUMINA_API_KEY environment variable is missing in production!")
-    elif not LUMINA_API_KEY:
-        LUMINA_API_KEY = "dev_lumina_secure_key_2026"
+    LUMINA_API_KEY = os.getenv("LUMINA_API_KEY")
+
+    if not LUMINA_API_KEY:
+        raise ValueError("LUMINA_API_KEY environment variable is missing! It must be provided in all environments.")
     
     # ML & CV Settings
     MIN_RAM_REQUIRED_MB = int(os.getenv("MIN_RAM_REQUIRED_MB", 400))

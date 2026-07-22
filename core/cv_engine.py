@@ -1,9 +1,11 @@
 import cv2
 import numpy as np
 import psutil
+import logging
 from typing import Dict, Any, Tuple, Optional
-
 from infra.config import settings
+
+logger = logging.getLogger(__name__)
 
 def get_available_memory_mb() -> float:
     """Reads memory limits, accurately supporting containerized cgroups environments."""
@@ -16,8 +18,8 @@ def get_available_memory_mb() -> float:
             with open("/sys/fs/cgroup/memory.current", "r") as f:
                 mem_current = int(f.read().strip())
             return (mem_max - mem_current) / (1024 * 1024)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Failed to read cgroups v2 memory limits: %s", e)
         
     try:
         # Check cgroups v1 (Older Docker)
@@ -27,8 +29,8 @@ def get_available_memory_mb() -> float:
             with open("/sys/fs/cgroup/memory/memory.usage_in_bytes", "r") as f:
                 mem_current = int(f.read().strip())
             return (mem_max - mem_current) / (1024 * 1024)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Failed to read cgroups v1 memory limits: %s", e)
 
     # Fallback to standard Host OS Memory
     vm = psutil.virtual_memory()
