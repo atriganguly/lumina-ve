@@ -13,7 +13,7 @@ Created by [@atriganguly](https://github.com/atriganguly)
 ---
 
 ![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)
-![Version](https://img.shields.io/badge/Version-1.0.0-blue)
+![Version](https://img.shields.io/badge/Version-1.0.0--beta-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-green)
 ![Language](https://img.shields.io/badge/Language-Python-informational)
 
