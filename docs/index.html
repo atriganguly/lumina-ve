@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumina VE - Demo</title>
+  
+  <!-- Browser Favicon -->
+  <link rel="icon" type="image/png" href="/docs/icon.png">
+  
+  <!-- Swagger UI & Source Code Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Source+Code+Pro:wght@400;500;600;700&family=Titillium+Web:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- GitHub Markdown CSS CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
+  <!-- Marked.js Markdown Parser CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    :root {
+      --swagger-green: #49cc90;
+      --swagger-green-bg: rgba(73, 204, 144, 0.1);
+      --swagger-green-border: rgba(73, 204, 144, 0.3);
+      --swagger-blue: #4990e2;
+      --swagger-blue-bg: rgba(73, 144, 226, 0.1);
+      --swagger-dark: #1b1b1b;
+      --swagger-border: #d9d9d9;
+      --swagger-bg: #fafafa;
+      --text-main: #3b4151;
+      --nav-link-bg: #2a2a2a;
+      --code-bg: #263238;
+      --curl-bg: #292b2c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--swagger-bg);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation Bar */
+    .topbar {
+      background-color: var(--swagger-dark);
+      padding: 10px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+      border-bottom: 1px solid #000;
+    }
+
+    .topbar-brand {
+      color: #ffffff;
+      font-family: 'Titillium Web', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-logo {
+      height: 28px;
+      width: 28px;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+
+    .topbar-brand span {
+      font-family: 'Open Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .topbar-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      color: #ffffff;
+      background: var(--nav-link-bg);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-family: 'Titillium Web', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #3a3a3a;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background: #383838;
+      border-color: var(--swagger-green);
+      color: var(--swagger-green);
+    }
+
+    .health-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #2a2a2a;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-family: 'Titillium Web', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      border: 1px solid #3a3a3a;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--swagger-green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--swagger-green);
+    }
+
+    /* Container & Tab Navigation */
+    .container {
+      max-width: 1140px;
+      margin: 25px auto;
+      padding: 0 20px;
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--swagger-border);
+      margin-bottom: 25px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 10px 20px;
+      font-family: 'Titillium Web', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #666;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: var(--swagger-green);
+      border-bottom-color: var(--swagger-green);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Swagger Accordion Card (Opblock) */
+    .opblock {
+      background: #ffffff;
+      border: 1px solid var(--swagger-green);
+      border-radius: 4px;
+      box-shadow: 0 0 3px rgba(0,0,0,0.19);
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .opblock-header {
+      background: var(--swagger-green-bg);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .opblock-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .method-badge {
+      background: var(--swagger-green);
+      color: #fff;
+      font-family: 'Titillium Web', sans-serif;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 3px;
+      font-size: 14px;
+      min-width: 80px;
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .opblock-title {
+      font-family: 'Source Code Pro', monospace;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--text-main);
+    }
+
+    .opblock-summary {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 13px;
+      color: #555;
+      margin-left: 10px;
+    }
+
+    .chevron-icon {
+      width: 20px;
+      height: 20px;
+      fill: var(--text-main);
+      transition: transform 0.2s ease;
+    }
+
+    .opblock.is-open .chevron-icon {
+      transform: rotate(180deg);
+    }
+
+    .opblock-body {
+      padding: 20px;
+      border-top: 1px solid var(--swagger-green);
+      display: block;
+    }
+
+    .opblock.is-closed .opblock-body {
+      display: none;
+    }
+
+    /* Swagger Parameters Table */
+    .opblock-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(59,65,81,0.2);
+      margin-bottom: 15px;
+    }
+
+    .opblock-section-title {
+      font-family: 'Titillium Web', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text-main);
+    }
+
+    .try-it-out-btn {
+      font-family: 'Titillium Web', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      border: 2px solid var(--swagger-blue);
+      background: transparent;
+      color: var(--swagger-blue);
+      padding: 4px 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .try-it-out-btn:hover {
+      background: var(--swagger-blue-bg);
+    }
+
+    .try-it-out-btn.cancel-mode {
+      border-color: #f93e3e;
+      color: #f93e3e;
+    }
+
+    .try-it-out-btn.cancel-mode:hover {
+      background: rgba(249,62,62,0.1);
+    }
+
+    .parameters-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .parameters-table th {
+      font-family: 'Titillium Web', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-main);
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(59,65,81,0.2);
+    }
+
+    .parameters-table td {
+      padding: 12px 8px;
+      vertical-align: top;
+      border-bottom: 1px solid rgba(59,65,81,0.1);
+    }
+
+    .param-name {
+      font-family: 'Source Code Pro', monospace;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .param-type {
+      font-family: 'Source Code Pro', monospace;
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .param-required {
+      color: #f93e3e;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    /* Form Controls & Inputs */
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-family: 'Titillium Web', sans-serif; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+    
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--swagger-border);
+      border-radius: 4px;
+      font-family: 'Source Code Pro', monospace;
+      font-size: 13px;
+      box-sizing: border-box;
+      transition: border 0.2s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--swagger-blue);
+      box-shadow: 0 0 0 1px var(--swagger-blue);
+    }
+
+    input[type="text"]:disabled {
+      background-color: #f2f2f2;
+      color: #777;
+      cursor: not-allowed;
+    }
+
+    .preset-btn {
+      background: #eef2f5;
+      border: 1px solid #cbd5e1;
+      padding: 6px 14px;
+      border-radius: 15px;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover { background: #e2e8f0; }
+
+    .execute-bar {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      margin-bottom: 25px;
+    }
+
+    .submit-btn {
+      background: var(--swagger-blue);
+      color: white;
+      border: none;
+      padding: 10px 36px;
+      font-family: 'Titillium Web', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .submit-btn:hover { background: #3b7ec7; }
+
+    .clear-btn {
+      background: transparent;
+      border: 2px solid #3b4151;
+      color: #3b4151;
+      padding: 8px 24px;
+      font-family: 'Titillium Web', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-btn:hover {
+      background: rgba(59,65,81,0.1);
+    }
+
+    /* Response & cURL Spec Displays */
+    .response-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    .response-status-badge {
+      background: var(--swagger-green);
+      color: #fff;
+      font-family: 'Source Code Pro', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 3px 10px;
+      border-radius: 3px;
+    }
+
+    .curl-block-container {
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .curl-title {
+      font-family: 'Titillium Web', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    pre.curl-block {
+      background: var(--curl-bg);
+      color: #00e676;
+      padding: 14px 16px;
+      border-radius: 4px;
+      font-family: 'Source Code Pro', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 0;
+      border: 1px solid #111;
+    }
+
+    pre.json-block {
+      background: var(--code-bg);
+      color: #eceff1;
+      padding: 16px;
+      border-radius: 4px;
+      font-family: 'Source Code Pro', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 0;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: 'Titillium Web', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Natural English Results Grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 16px;
+    }
+
+    .card-title { font-family: 'Titillium Web', sans-serif; font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 8px; }
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-family: 'Titillium Web', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .status-pass { background: #dcfce7; color: #166534; }
+    .status-fail { background: #fee2e2; color: #991b1b; }
+
+    .color-chip {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    /* Documentation Tab Banner & Wrapper */
+    .readme-banner {
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      padding: 12px 20px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .readme-container {
+      background: #ffffff;
+      padding: 30px;
+      border: 1px solid var(--swagger-border);
+      border-radius: 6px;
+      box-shadow: 0 0 3px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Topbar -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img src="/docs/icon.png" alt="Lumina VE Icon" class="topbar-logo">
+      Lumina VE <span>Marketplace Image Validation & Performance Intelligence Engine built for high-throughput scale.</span>
+    </div>
+
+    <div class="topbar-nav">
+      <div class="health-badge">
+        <div class="pulse-dot" id="health-dot"></div>
+        <span id="health-text">Checking Health...</span>
+      </div>
+      <a href="/docs" class="nav-btn" target="_blank">⚡ Swagger API Docs</a>
+      <a href="/health" class="nav-btn" target="_blank">🩺 /health</a>
+      <a href="https://github.com/atriganguly/lumina-ve" class="nav-btn" target="_blank">💻 GitHub Repo</a>
+      <a href="https://github.com/atriganguly/support/" class="nav-btn" target="_blank">💬 Support</a>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container">
+    
+    <!-- Tab Controls -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('demo')">🚀 Interactive Inspector</button>
+      <button class="tab-btn" onclick="switchTab('docs')">📖 System Documentation & Architecture</button>
+    </div>
+
+    <!-- TAB 1: Interactive Inspector -->
+    <div id="tab-demo" class="tab-content active">
+      
+      <!-- Swagger Accordion Opblock -->
+      <div class="opblock is-open" id="main-opblock">
+        
+        <!-- Opblock Header -->
+        <div class="opblock-header" onclick="toggleOpblock()">
+          <div class="opblock-header-left">
+            <span class="method-badge">POST</span>
+            <span class="opblock-title">/v1/vision/validate/url</span>
+            <span class="opblock-summary">Marketplace Image Validation & Quality Inspection Engine</span>
+          </div>
+          <svg class="chevron-icon" viewBox="0 0 20 20">
+            <path d="M17.418,6.109c-0.272-0.268-0.709-0.268-0.979,0L10,12.254L3.561,6.109c-0.271-0.268-0.709-0.268-0.978,0 c-0.27,0.268-0.27,0.704,0,0.972l7.129,6.788c0.135,0.135,0.312,0.203,0.489,0.203c0.177,0,0.355-0.068,0.489-0.203l7.128-6.788 C17.688,6.813,17.688,6.377,17.418,6.109z"></path>
+          </svg>
+        </div>
+        
+        <!-- Opblock Body -->
+        <div class="opblock-body">
+          
+          <!-- Parameters Section Header -->
+          <div class="opblock-section-header">
+            <span class="opblock-section-title">Parameters</span>
+            <button class="try-it-out-btn" id="try-btn" onclick="toggleTryItOut()">Try it out</button>
+          </div>
+
+          <!-- Parameters Table -->
+          <table class="parameters-table">
+            <thead>
+              <tr>
+                <th style="width: 25%;">Parameter</th>
+                <th style="width: 75%;">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="param-name">body <span class="param-required">*</span></div>
+                  <div class="param-type">string (body)</div>
+                </td>
+                <td>
+                  <div class="form-group">
+                    <label>1-Click Test Presets:</label>
+                    <button class="preset-btn" onclick="loadPreset('compliant')">🟢 Compliant Product</button>
+                    <button class="preset-btn" onclick="loadPreset('blurry')">🟡 Blurry Image</button>
+                    <button class="preset-btn" onclick="loadPreset('noncompliant')">🔴 Non-Compliant Background</button>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="image-url">Target Image Asset URL:</label>
+                    <input type="text" id="image-url" placeholder="https://example.com/image.jpg" value="https://m.media-amazon.com/images/I/71wF7MDG70L._AC_SL1500_.jpg" disabled>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Execute Button Group (Hidden until 'Try it out' is active) -->
+          <div class="execute-bar" id="execute-bar" style="display: none;">
+            <button class="submit-btn" id="run-btn" onclick="runAnalysis()">Inspect Image</button>
+            <button class="clear-btn" onclick="clearResults()">Clear</button>
+          </div>
+
+          <!-- Results & Responses Section -->
+          <div id="results-panel" style="display:none; margin-top: 25px;">
+            
+            <div class="opblock-section-header">
+              <span class="opblock-section-title">Responses</span>
+            </div>
+
+            <!-- cURL Request Preview -->
+            <div class="curl-block-container">
+              <div class="curl-title">cURL Command</div>
+              <pre class="curl-block" id="curl-output"></pre>
+            </div>
+
+            <!-- Request URL Preview -->
+            <div class="curl-block-container">
+              <div class="curl-title">Request URL</div>
+              <input type="text" id="request-url-output" readonly style="background: var(--curl-bg); color: #81d4fa; border: 1px solid #111;">
+            </div>
+
+            <!-- Executive Insights Section -->
+            <div class="response-header-bar">
+              <span class="opblock-section-title">Executive Insights & Compliance Report</span>
+            </div>
+            <div class="results-grid" id="insights-grid"></div>
+
+            <!-- Raw JSON Response -->
+            <div class="response-header-bar">
+              <span class="opblock-section-title">Technical API Response</span>
+              <span class="response-status-badge">200 OK</span>
+            </div>
+            
+            <div style="position: relative;">
+              <button class="copy-btn" onclick="copyJsonToClipboard()">Copy JSON</button>
+              <pre class="json-block" id="json-output"></pre>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Documentation (Live Embedded README) -->
+    <div id="tab-docs" class="tab-content">
+      <div class="readme-banner">
+        <span>📄 Live synchronization with root <b>README.md</b> file.</span>
+        <a href="https://github.com/atriganguly/lumina-ve/blob/main/README.md" target="_blank" style="color:#0969da; text-decoration:none; font-weight:600;">View on GitHub ↗</a>
+      </div>
+      <div class="readme-container">
+        <div id="markdown-body" class="markdown-body">
+          <p>Loading project architecture and technical documentation...</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const DEFAULT_API_KEY = "{{ DEFAULT_API_KEY }}";
+    let isReadmeLoaded = false;
+    let isEditing = false;
+
+    // 1. Toggle Accordion
+    function toggleOpblock() {
+      const block = document.getElementById('main-opblock');
+      block.classList.toggle('is-closed');
+      block.classList.toggle('is-open');
+    }
+
+    // 2. Swagger 2-Stage "Try It Out" Workflow
+    function toggleTryItOut() {
+      isEditing = !isEditing;
+      const btn = document.getElementById('try-btn');
+      const input = document.getElementById('image-url');
+      const execBar = document.getElementById('execute-bar');
+
+      if (isEditing) {
+        btn.innerText = 'Cancel';
+        btn.classList.add('cancel-mode');
+        input.disabled = false;
+        execBar.style.display = 'flex';
+      } else {
+        btn.innerText = 'Try it out';
+        btn.classList.remove('cancel-mode');
+        input.disabled = true;
+        execBar.style.display = 'none';
+      }
+    }
+
+    // 3. Clear Results
+    function clearResults() {
+      document.getElementById('results-panel').style.display = 'none';
+      document.getElementById('json-output').innerText = '';
+    }
+
+    // 4. Tab Switching Engine
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      if (tabName === 'demo') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('tab-demo').classList.add('active');
+      } else if (tabName === 'docs') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('tab-docs').classList.add('active');
+        if (!isReadmeLoaded) {
+          fetchAndRenderReadme();
+        }
+      }
+    }
+
+    // 5. Fetch and Render README.md dynamically
+    async function fetchAndRenderReadme() {
+      const container = document.getElementById('markdown-body');
+      try {
+        let response = await fetch('/README.md');
+        if (!response.ok) {
+          response = await fetch('https://raw.githubusercontent.com/atriganguly/lumina-ve/main/README.md');
+        }
+        
+        if (response.ok) {
+          const markdownText = await response.text();
+          container.innerHTML = marked.parse(markdownText);
+          isReadmeLoaded = true;
+        } else {
+          container.innerHTML = "<p>Failed to load documentation file.</p>";
+        }
+      } catch (err) {
+        container.innerHTML = "<p>Error fetching documentation markdown.</p>";
+      }
+    }
+
+    // 6. Live Health Check Poller
+    async function checkHealth() {
+      try {
+        const res = await fetch('/health');
+        if (res.ok) {
+          document.getElementById('health-dot').style.backgroundColor = '#49cc90';
+          document.getElementById('health-text').innerText = 'Operational · v1.0.0';
+        } else {
+          throw new Error();
+        }
+      } catch {
+        document.getElementById('health-dot').style.backgroundColor = '#f93e3e';
+        document.getElementById('health-text').innerText = 'Offline';
+      }
+    }
+    checkHealth();
+    setInterval(checkHealth, 15000);
+
+    // 7. Test Presets
+    function loadPreset(type) {
+      if (!isEditing) {
+        toggleTryItOut();
+      }
+      const urlInput = document.getElementById('image-url');
+      if (type === 'compliant') {
+        urlInput.value = "https://m.media-amazon.com/images/I/71wF7MDG70L._AC_SL1500_.jpg";
+      } else if (type === 'blurry') {
+        urlInput.value = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Unsharp_mask_and_gaussian_blur.png/320px-Unsharp_mask_and_gaussian_blur.png";
+      } else if (type === 'noncompliant') {
+        urlInput.value = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png";
+      }
+    }
+
+    // 8. Image Inspection Trigger & cURL Generator
+    async function runAnalysis() {
+      const url = document.getElementById('image-url').value;
+      const btn = document.getElementById('run-btn');
+      btn.innerText = "Analyzing Image...";
+      btn.disabled = true;
+
+      const origin = window.location.origin;
+      const fullEndpoint = `${origin}/v1/vision/validate/url`;
+
+      // Render cURL Command Preview
+      const curlCmd = `curl -X 'POST' \\\n  '${fullEndpoint}' \\\n  -H 'accept: application/json' \\\n  -H 'X-API-Key: ${DEFAULT_API_KEY}' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\n  "url": "${url}"\n}'`;
+      document.getElementById('curl-output').innerText = curlCmd;
+      document.getElementById('request-url-output').value = fullEndpoint;
+
+      try {
+        const response = await fetch('/v1/vision/validate/url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': DEFAULT_API_KEY
+          },
+          body: JSON.stringify({ url: url })
+        });
+
+        const data = await response.json();
+        btn.innerText = "Inspect Image";
+        btn.disabled = false;
+
+        if (response.ok) {
+          renderInsights(data);
+          document.getElementById('json-output').innerText = JSON.stringify(data, null, 2);
+          document.getElementById('results-panel').style.display = 'block';
+        } else {
+          alert("Error: " + (data.detail || "Validation failed"));
+        }
+      } catch (err) {
+        btn.innerText = "Inspect Image";
+        btn.disabled = false;
+        alert("Network error occurred while executing request.");
+      }
+    }
+
+    // 9. Copy to Clipboard Functionality
+    function copyJsonToClipboard() {
+      const jsonText = document.getElementById('json-output').innerText;
+      navigator.clipboard.writeText(jsonText).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerText = 'Copied!';
+        setTimeout(() => { btn.innerText = 'Copy JSON'; }, 2000);
+      });
+    }
+
+    // 10. Natural Language Translation Renderer
+    function renderInsights(data) {
+      const grid = document.getElementById('insights-grid');
+      const comp = data.marketplace_compliance;
+      const net = data.network_intelligence;
+      const content = data.content_intelligence;
+
+      let colorsHtml = content.dominant_colors.map(c => 
+        `<div><span class="color-chip" style="background:${c.hex_code}"></span><b>${c.hex_code}</b> (${c.percentage}%)</div>`
+      ).join('');
+
+      grid.innerHTML = `
+        <div class="card">
+          <div class="card-title">Amazon Listing Compliance</div>
+          ${comp.is_amazon_compliant 
+            ? '<span class="status-pill status-pass">PASSED</span><p>Meets Amazon product image standards.</p>' 
+            : '<span class="status-pill status-fail">NEEDS ATTENTION</span><p>Fails marketplace padding or background rules.</p>'}
+          <small>Pure White Canvas: ${comp.pure_white_background_percentage ?? 'N/A'}%</small>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Clarity & Blur Diagnostics</div>
+          ${!comp.is_blurry 
+            ? '<span class="status-pill status-pass">CRISP & CLEAR</span>' 
+            : '<span class="status-pill status-fail">BLURRY ASSET</span>'}
+          <p>Sharpness Score: <b>${comp.blur_variance_score}</b></p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">CDN & Fetch Speed</div>
+          <span class="status-pill status-pass">${net.ttfb_ms} ms TTFB</span>
+          <p>Server Location: <b>${net.geo_location}</b></p>
+          <small>IP: ${net.dns_resolution_ip}</small>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Dominant Visual Colors</div>
+          ${colorsHtml}
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

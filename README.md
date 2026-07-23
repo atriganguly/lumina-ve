@@ -6,7 +6,7 @@
 
 Created by [@atriganguly](https://github.com/atriganguly)
 
-[Repository](https://github.com/atriganguly/lumina-ve) | [Live Demo](https://lumina-ve.onrender.com/docs) | [Documentation](https://lumina-ve.onrender.com/docs)
+[Repository](https://github.com/atriganguly/lumina-ve) | [Live Demo](https://lumina-ve.onrender.com/demo) | [Documentation](https://lumina-ve.onrender.com/docs)
 
 </div>
 
