@@ -569,8 +569,8 @@
         <span id="health-text">Checking Health...</span>
       </div>
       <a href="/docs" class="nav-btn" target="_blank">⚡ Swagger API Docs</a>
-      <a href="/health" class="nav-btn" target="_blank">🩺 /health</a>
-      <a href="https://github.com/atriganguly/lumina-ve" class="nav-btn" target="_blank">💻 GitHub Repo</a>
+      <a href="/health" class="nav-btn" target="_blank">❤️‍🩹 /health</a>
+      <a href="https://github.com/atriganguly/lumina-ve" class="nav-btn" target="_blank">🗃️ GitHub Repo</a>
       <a href="https://github.com/atriganguly/support/" class="nav-btn" target="_blank">💬 Support</a>
     </div>
   </div>
@@ -580,11 +580,11 @@
     
     <!-- Tab Controls -->
     <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('demo')">🚀 Interactive Inspector</button>
-      <button class="tab-btn" onclick="switchTab('docs')">📖 System Documentation & Architecture</button>
+      <button class="tab-btn active" onclick="switchTab('demo')">🔄 Live Demo</button>
+      <button class="tab-btn" onclick="switchTab('docs')">📝 System Documentation</button>
     </div>
 
-    <!-- TAB 1: Interactive Inspector -->
+    <!-- TAB 1: Live Demo -->
     <div id="tab-demo" class="tab-content active">
       
       <!-- Swagger Accordion Opblock -->
@@ -635,7 +635,7 @@
 
                   <div class="form-group" style="margin-bottom: 0;">
                     <label for="image-url">Target Image Asset URL:</label>
-                    <input type="text" id="image-url" placeholder="https://example.com/image.jpg" value="https://m.media-amazon.com/images/I/71wF7MDG70L._AC_SL1500_.jpg" disabled>
+                    <input type="text" id="image-url" placeholder="https://example.com/image.jpg" value="https://m.media-amazon.com/images/I/61eiCddloAL._SL1440_.jpg" disabled>
                   </div>
                 </td>
               </tr>
@@ -806,11 +806,11 @@
       }
       const urlInput = document.getElementById('image-url');
       if (type === 'compliant') {
-        urlInput.value = "https://m.media-amazon.com/images/I/71wF7MDG70L._AC_SL1500_.jpg";
+        urlInput.value = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1000&q=80](https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1000&q=80";
       } else if (type === 'blurry') {
-        urlInput.value = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Unsharp_mask_and_gaussian_blur.png/320px-Unsharp_mask_and_gaussian_blur.png";
+        urlInput.value = "https://picsum.photos/id/1025/800/800?blur=10";
       } else if (type === 'noncompliant') {
-        urlInput.value = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png";
+        urlInput.value = "https://images.unsplash.com/photo-1503602642458-232111445657?w=1000&q=80";
       }
     }
 
