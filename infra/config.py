@@ -13,7 +13,7 @@ if env_path.exists():
 
 class Config:
     PROJECT_NAME = "Lumina-VE"
-    VERSION = "2.0.0"
+    VERSION = "1.0.0"
     
     # Environment toggle: 'dev' or 'production'
     ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
