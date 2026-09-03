@@ -57,6 +57,7 @@ Lumina VE resolves structural instability by introducing non-blocking thread-poo
 ## System Architecture
 The application uses a decoupled architecture to isolate presentation, orchestration, execution, and persistent storage layers.
 
+```
 +-------------------+      +-------------------+      +-------------------+
 |  FastAPI Router   | ---> |  Async Orchestrator| ---> |  Worker Threads   |
 |  (Client Layer)   |      |  (HTTPX / Core)    |      |  (OpenCV / ONNX)  |
@@ -67,7 +68,7 @@ The application uses a decoupled architecture to isolate presentation, orchestra
                            |  Network Engine   |      | Output Artifacts  |
                            |  (SSRF / SNI Safe)|      |  (JSON Payload)   |
                            +-------------------+      +-------------------+
-
+```
 ## Core Engineering Mechanics
 
 ### 1. Stateful Continuation & Relay
